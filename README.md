@@ -18,8 +18,8 @@ Hate speech classifiers, like the ones platforms such as X use to automatically 
 4. **Mitigation experiment.** Fine-tune only the classification head of the model (the underlying transformer stays frozen) on a class- and dialect-balanced subsample, then re-evaluate to see whether the gap narrows.
 
 ## Data
-- **Source:** Waseem & Hovy (2016), Hate Speech Twitter Annotations (~19,000 tweets, labeled hate speech / not).
-- **Access:** distributed as tweet IDs only; text is retrieved by hydrating IDs through the platform's API. Some tweets may no longer be retrievable.
+- **Source:** Davidson et al. (2017), 24,783 tweets labeled as `hate speech` / `offensive language` / `neither` by human CrowdFlower annotators.
+- **Access:** full tweet text is included directly in the released CSV. (Waseem & Hovy (2016) was the original plan, but it's distributed as tweet-IDs-only, and the X/Twitter API no longer has a free tier for retrieving historical tweets.)
 - **Dialect labels:** model-estimated probabilities (Blodgett et al., 2016), not self-reported by tweet authors.
 
 See [`PROPOSAL.md`](./PROPOSAL.md) for the full project proposal, including hypothesis, assumptions, and expected outcome.
@@ -27,19 +27,42 @@ See [`PROPOSAL.md`](./PROPOSAL.md) for the full project proposal, including hypo
 ## Tech Stack
 Python, Jupyter Notebooks, Hugging Face `transformers`, `scikit-learn`, `pandas`, `matplotlib`.
 
+## Project Structure
+```
+├── data/
+│   ├── raw/                    # original downloaded dataset
+│   └── processed/              # dialect-scored data, model predictions
+├── src/
+│   ├── dialect_predictor/      # Blodgett et al. (2016) predictor, ported to Python 3
+│   ├── 01_explore_dataset.py   # download + sanity-check the dataset
+│   ├── 02_score_dialect.py     # estimate AAE-alignment per tweet
+│   └── 03_evaluate_baseline.py # run the classifier, compare AAE vs. mainstream
+├── results/
+│   ├── figures/                # plots for the report/presentation
+│   └── tables/                 # metrics tables
+├── report/                     # final report draft
+├── presentation/                # class presentation slides
+└── scripts/                    # one-off utilities (e.g. GitHub project setup)
+```
+
 ## Setup
 ```bash
 git clone https://github.com/serac01/hate-speech-detection-system.git
 cd hate-speech-detection-system
 pip install -r requirements.txt
 ```
-Notebooks are organized by stage: data collection and hydration, dialect estimation, baseline evaluation, and the fine-tuning experiment.
+Run the pipeline in order, from the project root:
+```bash
+python src/01_explore_dataset.py
+python src/02_score_dialect.py
+python src/03_evaluate_baseline.py
+```
 
 ## Educational Context
 Developed for the NLP course at Umeå University (lecturer: Rahil, autumn 2026), as the course's final project.
 
 ## References
-- Waseem, Z. & Hovy, D. (2016). *Hateful Symbols or Hateful People? Predictive Features for Hate Speech Detection on Twitter.*
+- Davidson, T., Warmsley, D., Macy, M., & Weber, I. (2017). *Automated Hate Speech Detection and the Problem of Offensive Language.*
 - Blodgett, S. L., Green, L., & O'Connor, B. (2016). *Demographic Dialectal Variation in Social Media: A Case Study of African-American English.*
 - Sap, M., Card, D., Gabriel, S., Choi, Y., & Smith, N. A. (2019). *The Risk of Racial Bias in Hate Speech Detection.*
 - Davidson, T., Bhattacharya, D., & Weber, I. (2019). *Racial Bias in Hate Speech and Abusive Language Detection Datasets.*
