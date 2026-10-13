@@ -7,7 +7,7 @@ import urllib.request
 import os
 
 URL = "https://raw.githubusercontent.com/t-davidson/hate-speech-and-offensive-language/master/data/labeled_data.csv"
-OUT_PATH = os.path.join("data", "raw", "davidson_labeled_data.csv")
+OUT_PATH = os.path.join("data", "raw", "davidson_dataset.csv")
 
 os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
 

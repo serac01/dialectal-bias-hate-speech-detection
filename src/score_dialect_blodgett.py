@@ -6,11 +6,11 @@ print("\n\n\n", "-" * 30, " ESTIMATE WHETHER EACH TWEET IS WRITTEN IN AAE OR MAI
 
 import os
 import pandas as pd
-from dialect_predictor import predict, twokenize
+from blodgett import predict, twokenize
 
 
-IN_PATH = os.path.join("data", "raw", "davidson_labeled_data.csv")
-OUT_PATH = os.path.join("data", "processed", "tweets_with_dialect_group.csv")
+IN_PATH = os.path.join("data", "raw", "davidson_dataset.csv")
+OUT_PATH = os.path.join("data", "processed", "davidson_dataset_with_dialect.csv")
 
 # A tweet is "aae_aligned" above AAE_THRESHOLD, "mainstream" below MAINSTREAM_THRESHOLD
 AAE_THRESHOLD = 0.6
