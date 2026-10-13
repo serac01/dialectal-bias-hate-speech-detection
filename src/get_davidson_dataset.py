@@ -1,8 +1,5 @@
 """
-Download the Davidson et al. (2017) hate speech dataset and prints basic stats.
-
-Run:
-    python explore_data.py
+Download the Davidson et al. (2017) hate speech dataset and prints basic statistics
 """
 
 import pandas as pd
@@ -17,6 +14,7 @@ os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
 if not os.path.exists(OUT_PATH):
     urllib.request.urlretrieve(URL, OUT_PATH)
 
+print("-" * 30, " DOWNLOADING DAVIDSON ET AL. (2027) HATE SPEECH DATASET ", 30 * "-")
 df = pd.read_csv(OUT_PATH)
 
 categories_map = {0: "hate_speech", 1: "offensive_language", 2: "neither"}
