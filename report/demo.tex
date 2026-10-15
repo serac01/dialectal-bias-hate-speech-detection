@@ -58,8 +58,8 @@ Social media platforms rely on automatic classifiers to detect or remove hateful
 content. This systems are usually trained and tested on text that is close to
 mainstream written English. Friedman and Nissenbaum define a system biased
 when it works well for the population it was built and tested on, but it fails for users
-who do not belong to this population~\cite{friedman1996}. African-American English (AAE)
-is a variety of English with its own grammar and vocabulary~\cite{green2002}. If a classifier 
+who do not belong to this population. African-American English (AAE)
+is a variety of English with its own grammar and vocabulary. If a classifier 
 learned its notion of ``toxic'' based on other varieties, it has no reliable way of 
 knowing that the AAE expression it has rarely seen is not offensive.
 
@@ -140,10 +140,10 @@ and excluded. We also exclude 7 tweets that received no score. This leaves 17,90
 % with stricter values (Section~\ref{sec:sensitivity}).
 
 \subsection{Hate classifier (RoBERTa)}
-The audited classifier is \modelfull{}. According to its model card, it is a RoBERTa-base model~\cite{liu2019}
+The audited classifier is \modelfull{}. According to its model card, it is a RoBERTa-base model
 pretrained on about 58 million tweets and fine-tuned for binary hate speech detection on the TweetEval
-benchmark~\cite{barbieri2020}, that is, on HatEval~\cite{basile2019}. We run it as is, with no further
-training, through the Hugging Face \texttt{transformers} library~\cite{wolf2020}.
+benchmark, that is, on HatEval. We run it as is, with no further
+training, through the Hugging Face \texttt{transformers} library.
 
 Before inference, user mentions are replaced by \texttt{@user} and links by \texttt{http}, as in the
 preprocessing of the model, and inputs are truncated to 128 tokens. The predicted label is the one the
@@ -157,9 +157,19 @@ the counts of true and false positives and negatives (TP, FP, FN, TN). Table~\re
 In this project the difference between the AAE-aligned and the mainstream value of a metric its called \emph{gap}.
 
 
-To test whether a gap is larger than sampling noise, we use a non-parametric bootstrap~\cite{efron1993}. In each of 2,000 rounds, we draw each group again with replacement, with the same size as the original, compute the metric on both resampled groups and record the gap. The 95\% confidence interval is given by the 2.5th and 97.5th percentiles of the 2,000 gaps. The approximate two-sided $p$-value is twice the smaller of the shares of resampled gaps that are at least zero and below zero. We use a fixed random seed. The bootstrap measures only sampling noise: it does not account for errors of the dialect predictor or of the human labels. We test the gaps in F1 and in FPR.
+To test whether a gap was larger than sampling noise, it was used a non-parametric bootstrap. 
+In each of 2,000 rounds, it was drawn each group again with replacement, with the same size 
+as the original, it was then computed the metric on both resampled groups and record the gap.
+The 95\% confidence interval was given by the 2.5th and 97.5th percentiles of the 2,000 gaps.
+The approximate two-sided $p$-value is twice the smaller of the shares of resampled gaps that
+are at least zero and below zero. The bootstrap measures only sampling noise, it does not account
+for errors of the dialect predictor or of the human labels. It was tested the gaps in F1 and in FPR.
 
-We add three descriptive analyses. First, we compute the rate of tweets flagged as hate within each human label (hate speech, offensive language, neither) and group, which compares tweets of the same kind. Second, we recompute the FPR gap with stricter dialect thresholds. Third, we inspect flagged tweets by hand and look at word-level AAE scores.
+% TODO TODO TODO TODO TODO
+% After that was added three more descriptive analyses. First, it was computed the rate of tweets
+% flagged as hate within each human label (hate speech, offensive language, neither) and group,
+% which compares tweets of the same kind. Second, it was recomputed the FPR gap with stricter dialect
+% thresholds. Finally, it was inspected flagged tweets by hand and look at word-level AAE scores.
 
 \begin{table}
    \centering
