@@ -1,9 +1,17 @@
 **/__pycache__/
 /scripts
-/report
 /results
 /presentation
 
 /data
 
 *.docx
+
+# Report LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
