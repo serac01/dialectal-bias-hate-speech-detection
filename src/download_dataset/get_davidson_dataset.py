@@ -14,7 +14,7 @@ os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
 if not os.path.exists(OUT_PATH):
     urllib.request.urlretrieve(URL, OUT_PATH)
 
-print("-" * 30, " DOWNLOADING DAVIDSON ET AL. (2027) HATE SPEECH DATASET ", 30 * "-")
+print("-" * 30, " DOWNLOADING DAVIDSON ET AL. (2017) HATE SPEECH DATASET ", 30 * "-")
 df = pd.read_csv(OUT_PATH)
 
 categories_map = {0: "hate_speech", 1: "offensive_language", 2: "neither"}
