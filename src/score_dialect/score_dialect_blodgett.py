@@ -1,8 +1,16 @@
 """
-Estimate whether each tweet is written in AAE (African-American English) or mainstream English,
-using the dialect predictor from Blodgett et al. (2016).
+Estimate how AAE-aligned each tweet is, with the dialect predictor of Blodgett et al. (2016),
+for the three datasets (Davidson, HateXplain and HateDay).
+
+For every tweet saves:
+  - aae_score: first component of the 4-way posterior (African-American, Hispanic, Asian, White)
+  - dialect_group: aae_aligned (score >= 0.6), mainstream (score <= 0.4), ambiguous (in between), unscored
+  - the full posterior (p_aae, p_hispanic, p_asian, p_white) and the argmax group (aae_argmax / white_argmax / other_argmax)
+  - aae_score_masked: the AAE score after REMOVING PROFANITY from the text before scoring.
+    The groups are partly defined by the same words that make a classifier flag a tweet; scoring without
+    them breaks that link. The tweet itself is not changed, only what the dialect model sees.
+The score describes how much the wording resembles each group's usage, not who wrote the tweet.
 """
-print("-" * 30, " ESTIMATE WHETHER EACH TWEET IS WRITTEN IN AAE OR MAINSTREAM ENGLISH USING BLODGETT ET AL. PREDICTOR ", 30 * "-")
 
 import os
 import re
@@ -18,6 +26,8 @@ DATASETS = {
                  os.path.join("data", "processed", "davidson_with_dialect.csv")),
     "hatexplain": (os.path.join("data", "raw", "hatexplain_twitter.csv"),
                    os.path.join("data", "processed", "hatexplain_with_dialect.csv")),
+    "hateday": (os.path.join("data", "raw", "hateday_us.csv"),
+                os.path.join("data", "processed", "hateday_with_dialect.csv")),
 }
 
 # A tweet is "aae_aligned" above AAE_THRESHOLD, "mainstream" below MAINSTREAM_THRESHOLD
@@ -41,7 +51,7 @@ def assign_dialect_group(score):
     return "ambiguous"
 
 def score_tweet(text):
-    tokens = twokenize.tokenizeRawTweetText(text)
+    tokens = twokenize.tokenizeRawTweetText(str(text))
     posterior = predict.predict(tokens) # Returns a length-4 numpy array [African-American, Hispanic, Asian, White]
     posterior_masked = predict.predict([t for t in tokens if not PROFANITY.match(t)])
     return {
@@ -54,11 +64,9 @@ def score_tweet(text):
         "aae_score_masked": np.nan if posterior_masked is None else posterior_masked[0],
     }
 
-
-
 predict.load_model()
 for name, (in_path, out_path) in DATASETS.items():
-    print("\n" + "-" * 30, f" SCORING: {name.upper()} ", 30 * "-")
+    print("\n" + "-" * 30, f" DIALECT SCORES: {name.upper()} ", 30 * "-")
     if not os.path.exists(in_path):
         print(f"{in_path} not found: run the data stage first. Skipping...")
         continue

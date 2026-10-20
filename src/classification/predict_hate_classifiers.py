@@ -1,15 +1,15 @@
 """
-Run the two pretrained hate speech classifiers on every tweet that has a dialect score, for both datasets:
-  1. cardiffnlp/twitter-roberta-base-hate
-  2. facebook/roberta-hate-speech-dynabench-r4-target
-For each model it saves the probability of the hate class (hate_score_k) and the predicted label
-at the default threshold (pred_label_k = 1 if hate_score_k >= 0.5).
+Run the two pretrained classifiers on every tweet that has a dialect score, for the three datasets (Davidson, HateXplain and HateDay):
+  1. cardiffnlp/twitter-roberta-base-hate           -> probability of "hate"      (trained on HatEval)
+  2. unitary/unbiased-toxic-roberta (Detoxify)      -> probability of "toxicity"  (trained on Jigsaw Civil Comments)
+For each model it saves the score of its positive label (hate_score_k) and the label at the default
+threshold (pred_label_k = 1 if hate_score_k >= 0.5).
 """
 
 import os
+import json
 import numpy as np
 import pandas as pd
-from transformers import pipeline
 
 DATASETS = {
     "davidson": {"id": "Unnamed: 0",
@@ -18,14 +18,19 @@ DATASETS = {
     "hatexplain": {"id": "post_id",
                    "in": os.path.join("data", "processed", "hatexplain_with_dialect.csv"),
                    "out": os.path.join("data", "processed", "hatexplain_predictions.csv")},
+    "hateday": {"id": "tweet_id",
+                "in": os.path.join("data", "processed", "hateday_with_dialect.csv"),
+                "out": os.path.join("data", "processed", "hateday_predictions.csv")},
 }
 MODELS = {
-    "1": {"name": "cardiffnlp/twitter-roberta-base-hate", "preprocess": True},    # needs @user / http placeholders
-    "2": {"name": "facebook/roberta-hate-speech-dynabench-r4-target", "preprocess": False},
+    "1": {"name": "cardiffnlp/twitter-roberta-base-hate", "backend": "transformers",
+          "label": "hate", "preprocess": True},     # needs @user / http placeholders
+    "2": {"name": "unitary/unbiased-toxic-roberta", "backend": "detoxify",
+          "detoxify_name": "unbiased", "label": "toxicity", "preprocess": False},
 }
-HATE_LABEL = "hate"
 BATCH_SIZE = 32
 MAX_LENGTH = 128
+RECORD_PATH = os.path.join("data", "processed", "classifier_models.json")  # which model produced each column
 
 def preprocess(text):
     """Model 1 requirement: replace @mentions and URLs with placeholders."""
@@ -35,6 +40,32 @@ def preprocess(text):
         t = "http" if t.startswith("http") else t
         new_text.append(t)
     return " ".join(new_text)
+
+
+def score_with_transformers(model, texts):
+    from transformers import pipeline
+    # top_k=None returns the score of every class, so we can keep the probability of the positive label
+    clf = pipeline("text-classification", model=model["name"], truncation=True, max_length=MAX_LENGTH, top_k=None)
+    outputs = clf(texts, batch_size=BATCH_SIZE)
+    return [next(c["score"] for c in o if c["label"] == model["label"]) for o in outputs]
+
+
+def score_with_detoxify(model, texts):
+    from detoxify import Detoxify
+    detox = Detoxify(model["detoxify_name"])  # toxicity, severe_toxicity, obscene, ...
+    scores = []
+    for start in range(0, len(texts), BATCH_SIZE):
+        scores.extend(detox.predict(texts[start:start + BATCH_SIZE])[model["label"]])
+        if (start // BATCH_SIZE) % 100 == 0:
+            print(f"  {start}/{len(texts)} tweets")
+    return scores
+
+# If a model changed, its columns are stale.
+if os.path.exists(RECORD_PATH):
+    with open(RECORD_PATH) as f:
+        recorded = json.load(f)
+else:
+    recorded = {}
 
 for dataset, cfg in DATASETS.items():
     id_column = cfg["id"]
@@ -52,7 +83,13 @@ for dataset, cfg in DATASETS.items():
         print("No predictions file yet.")
     predictions = df[[id_column]].copy()  # one row per tweet, same order as df
     if previous is not None:
-        predictions = predictions.merge(previous.drop_duplicates(id_column), on=id_column, how="left")
+        if stale:
+            print("Models changed since the saved predictions: " + ", ".join(f"{key} ({known.get(key)} -> {MODELS[key]['name']})" for key in stale))
+            print("Their old predictions are discarded and recomputed.")
+        previous = previous.drop_duplicates(id_column)
+        for key in stale:  # drop the columns of models that changed
+            previous = previous.drop(columns=[f"hate_score_{key}", f"pred_label_{key}"], errors="ignore")
+        predictions = predictions.merge(previous, on=id_column, how="left")
 
     for key, model in MODELS.items():
         score_column, label_column = f"hate_score_{key}", f"pred_label_{key}"
@@ -64,15 +101,16 @@ for dataset, cfg in DATASETS.items():
             texts = df.loc[todo, "tweet"].astype(str)
             texts = texts.apply(preprocess).tolist() if model["preprocess"] else texts.tolist()
             print(f"Loading {model['name']}...")
-            # top_k=None returns the score of every class, so we can keep the probability of "hate"
-            clf = pipeline("text-classification", model=model["name"], truncation=True, max_length=MAX_LENGTH, top_k=None)
             print(f"Running inference on {len(texts)} tweets...")
-            outputs = clf(texts, batch_size=BATCH_SIZE)
-            scores = [next(c["score"] for c in o if c["label"] == HATE_LABEL) for o in outputs]
+            scorer = score_with_detoxify if model["backend"] == "detoxify" else score_with_transformers
+            scores = scorer(model, texts)
             predictions.loc[todo, score_column] = scores
             predictions.loc[todo, label_column] = (np.array(scores) >= 0.5).astype(int)
         os.makedirs(os.path.dirname(cfg["out"]), exist_ok=True)
         predictions.to_csv(cfg["out"], index=False)  # saved after each model, so a long run is not lost
+        known[key] = model["name"]  # only now the columns of this model are known to be current
+        with open(RECORD_PATH, "w") as f:
+            json.dump(recorded, f, indent=1)
 
     for key in MODELS:
         predictions[f"pred_label_{key}"] = predictions[f"pred_label_{key}"].astype(int)
