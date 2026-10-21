@@ -14,20 +14,10 @@
 \usepackage{graphicx}     %% for graphical things such as including pictures
 \usepackage{url}          %% for proper formatting of URLs
 \usepackage{tikz}
-\usetikzlibrary{positioning}
+\usetikzlibrary{arrows, positioning}
 
-\newcommand{\todo}[1]{\textbf{[TODO: #1]}}
-\newcommand{\model}{\texttt{twitter-}\allowbreak\texttt{roberta-}\allowbreak\texttt{base-}\allowbreak\texttt{hate}}
-\newcommand{\modelfull}{\texttt{cardiffnlp/}\allowbreak\model}
-% Confusion matrix counts
-\newcommand{\aaeTN}{1123}
-\newcommand{\aaeFP}{3384}
-\newcommand{\aaeFN}{75}
-\newcommand{\aaeTP}{107}
-\newcommand{\mainTN}{8083}
-\newcommand{\mainFP}{4136}
-\newcommand{\mainFN}{844}
-\newcommand{\mainTP}{148}
+\newcommand{\modelone}{\texttt{cardiffnlp/}\allowbreak\texttt{twitter-}\allowbreak\texttt{roberta-}\allowbreak\texttt{base-}\allowbreak\texttt{hate}}
+\newcommand{\modeltwo}{\texttt{facebook/}\allowbreak\texttt{roberta-}\allowbreak\texttt{hate-}\allowbreak\texttt{speech-}\allowbreak\texttt{dynabench-}\allowbreak\texttt{r4-}\allowbreak\texttt{target}}
 
 \begin{document}
 
@@ -35,9 +25,8 @@
 
 \mainmatter
 
-\title{Dialect Bias in Hate Speech Detection Systems Audit to Pretained Twitter Classifier on AAE Aligned Text}
-
-\titlerunning{Dialectal Bias in Hate Speech Detection}
+\title{Dialectal Bias in Hate Speech Detection Systems}
+\titlerunning{Dialectal Bias in Hate Speech Detection Systems}
 
 \author{S\'{e}rgio Apolin\'{a}rio da Costa}
 
@@ -50,38 +39,79 @@
 \maketitle
 
 \begin{abstract}
-TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+We audit two openly available classifiers, a hate speech detector and a toxicity detector, on
+three Twitter corpora: Davidson et al., the Twitter part of HateXplain and the US random sample
+of HateDay. Tweets are grouped by how closely their wording matches African-American English
+(AAE) with the dialect model of Blodgett et al. On tweets that humans labelled 
+\emph{neither hate nor offensive}, the AAE-aligned group is flagged more often by both classifiers
+in all three corpora (false positive rate gaps from $+0.02$ to $+0.30$, all intervals above 
+zero), and a random AAE-aligned tweet gets a higher score than a random mainstream one with
+probability $0.62$ to $0.75$.
 \end{abstract}
 
 \section{Introduction}
-Social media platforms rely on automatic classifiers to detect or remove hateful
-content. This systems are usually trained and tested on text that is close to
-mainstream written English. Friedman and Nissenbaum define a system biased
-when it works well for the population it was built and tested on, but it fails for users
-who do not belong to this population. African-American English (AAE)
-is a variety of English with its own grammar and vocabulary. If a classifier 
-learned its notion of ``toxic'' based on other varieties, it has no reliable way of 
-knowing that the AAE expression it has rarely seen is not offensive.
-
-Earlier work has found that hate speech datasets and the models trained on
-them treat tweets associated with AAE differently~\cite{davidson2019}.
-
-This project will study the \modelfull{}\footnote{\url{https://huggingface.co/cardiffnlp/twitter-roberta-base-hate}} model, and 
-evaluate it on the tweets of Davidson et al.~\cite{davidson2017} dataset.
+Social media platforms rely on automatic classifiers to flag hateful content. This systems are
+usually trained and tested on text close to mainstream written English. Friedman and Nissenbaum
+call a system biased when it works well for the population it was built and tested on, but fails
+for users who differ from it. African-American English (AAE) is a rule-governed variety of English
+with its own grammar and vocabulary. Earlier work found that hate speech datasets, and the models
+trained on them, treat tweets associated with AAE differently. In this project we audit two
+openly available classifiers, on three different datasets.
 
 \subsection{Research Questions}
-This project will address the following research questions.
+This project will address the following research questions:
 \begin{itemize}
-      \item Does the classifier show a performance gap between AAE-aligned and
-            tweets? Is the gap larger than sampling noise?
-      \item Which factors are linked to the AAE-aligned misclassification?
+  \item Do the classifiers flag AAE-aligned tweets that are \emph{not} hate more often than mainstream tweets?
+  \item Does the gap appear for both classifiers, not only one?
+  \item Does the gap appear in all three corpora?
+  \item Does the gap stay when we use a different threshold?
+  \item Does the gap stay when we define the groups in another way?
+  \item Is the gap caused by the label mix of the two groups?
+  \item Is the gap caused by profanity?
+  \item Is the gap caused by tweet length?
+  \item Do the words in the tweet explain the gap?
+  \item Which words go with the false positives?
 \end{itemize}
+The hypothesis is that the classifiers flag more of the AAE-aligned tweets that are not hate
+than of the mainstream ones.
 
-The hypothesis is that the classifier flags more of the AAE-aligned tweets that are
-not hate speech compared to the mainstream tweets.
+\section{Background and Related Work}
 
-\section{Literature Review}\label{sec:lit}
-TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+\subsection{Automated Hate Speech Detection and the Problem of Offensive Language}
+Davidson et al.~\cite{davidson2017} collected tweets that match a hate speech lexicon and had
+crowd workers label them as \emph{hate speech}, \emph{offensive language} or \emph{neither}.
+Their main point is that systems tend to confuse offensive language with hate speech. This
+distinction is central here. A classifier may disagree with the labels because its definition
+of hate differs, not because it is wrong. The main idea is that offensive language is not hate speech.
+
+\subsection{Demographic Dialectal Variation in Social Media: A Case Study of AAE}
+Blodgett et al.~\cite{blodgett2016} built a mixed-membership model from geolocated tweets and
+Census demographics. For a tweet, it gives proportions over four demographically aligned language
+groups, one of which is African-American-aligned. The output describes how much a text resembles
+the usage of a group. It does not say who wrote it. In this project it is used as a measurement
+instrument to split tweets into AAE-aligned and mainstream groups, and this limit is stated wherever it matters.
+
+\subsection{The Risk of Racial Bias in Hate Speech Detection}
+Sap et al.~\cite{sap2019} showed that AAE markers correlate with toxicity labels in hate speech
+datasets, that classifiers trained on these data propagate the correlation, and that annotators
+primed with dialect information label fewer tweets as offensive. Their results concern models
+\emph{trained} on annotated corpora. In this project, it is used ready-made pretrained classifiers 
+and it is evaluted on independent corpora. Following the usual reading of fairness as comparable
+error rates across groups, it was used the false positive rate (FPR) as the main quantity.
+
+\subsection{HateXplain: A Benchmark Dataset for Explainable Hate Speech Detection}
+HateXplain~\cite{mathew2021} is a benchmark of about 20,000 posts from Twitter and Gab. It has
+majority labels (hateful, offensive, normal), the targeted community and the words that justify
+each label. This project uses its Twitter part as a second corpus, because the dialect model
+was built on Twitter. It differs from Davidson in collection, annotation and text normalisation,
+so a gap found in both is less likely to be a property of one dataset.
+
+\subsection{HateDay: Insights from a Global Hate Speech Dataset Representative of a Day on Twitter}
+HateDay~\cite{tonneau2024} is a random sample of all tweets posted on a single day (21 September
+2022), annotated for hate speech. Unlike Davidson, which was selected with a lexicon, it reflects
+what a platform actually sees. Most tweets are harmless and hate is rare. This project only uses
+the US part as a third corpus to test whether the gap seen in lexicon-selected data also appears
+in everyday tweets. The dataset is gated, so no tweet is printed, quoted or committed in this project.
 
 \section{Materials and Methods}\label{sec:methods}
 
@@ -140,7 +170,7 @@ and excluded. We also exclude 7 tweets that received no score. This leaves 17,90
 % with stricter values (Section~\ref{sec:sensitivity}).
 
 \subsection{Hate classifier (RoBERTa)}
-The audited classifier is \modelfull{}. According to its model card, it is a RoBERTa-base model
+The audited classifier is. According to its model card, it is a RoBERTa-base model
 pretrained on about 58 million tweets and fine-tuned for binary hate speech detection on the TweetEval
 benchmark, that is, on HatEval. We run it as is, with no further
 training, through the Hugging Face \texttt{transformers} library.
@@ -222,21 +252,21 @@ The other metrics are not. The recall is 0.588 for AAE-aligned tweets and 0.149 
 and the FPR is 0.751 against 0.338. Accuracy is 0.262 against 0.623. The classifier is therefore much more
 willing to flag AAE-aligned tweets, both the ones that are hate and the ones that are not.
 
-\begin{table}
-   \centering
-   \begin{tabular}{|l|l|r|r|}
-     \hline
-     \textbf{Group} & \textbf{Davidson label} & \textbf{Not flagged} & \textbf{Flagged}\\
-     \hline
-     AAE-aligned & not hate & TN = \aaeTN & FP = \aaeFP\\
-      & hate & FN = \aaeFN & TP = \aaeTP\\
-     \hline
-     Mainstream & not hate & TN = \mainTN & FP = \mainFP\\
-      & hate & FN = \mainFN & TP = \mainTP\\
-     \hline
-   \end{tabular}
-   \caption{Confusion matrices at the default threshold.\label{tab:confusion}}
-\end{table}
+% \begin{table}
+%    \centering
+%    \begin{tabular}{|l|l|r|r|}
+%      \hline
+%      \textbf{Group} & \textbf{Davidson label} & \textbf{Not flagged} & \textbf{Flagged}\\
+%      \hline
+%      AAE-aligned & not hate & TN = \aaeTN & FP = \aaeFP\\
+%       & hate & FN = \aaeFN & TP = \aaeTP\\
+%      \hline
+%      Mainstream & not hate & TN = \mainTN & FP = \mainFP\\
+%       & hate & FN = \mainFN & TP = \mainTP\\
+%      \hline
+%    \end{tabular}
+%    \caption{Confusion matrices at the default threshold.\label{tab:confusion}}
+% \end{table}
 
 \begin{table}
    \centering
