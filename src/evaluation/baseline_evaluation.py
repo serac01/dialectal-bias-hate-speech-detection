@@ -10,7 +10,8 @@ from sklearn.metrics import classification_report
 DIALECT_PATH = os.path.join("data", "processed", "davidson_with_dialect.csv")
 PREDICTIONS_PATH = os.path.join("data", "processed", "davidson_predictions.csv")
 ID_COLUMN = "Unnamed: 0"
-MODEL_NAMES = {"1": "twitter-roberta-base-hate", "2": "roberta-hate-speech-dynabench-r4-target"}
+MODEL_NAMES = {"1": "twitter-roberta-base-hate", "2": "unbiased-toxic-roberta"}
+POSITIVE_CLASSES = {"1": [0], "2": [0, 1]}
 N_BOOTSTRAP = 2000
 RANDOM_SEED = 42
 
@@ -106,13 +107,13 @@ def bootstrap_gap(metric):  # uses the current `groups` and `rng` of the loop be
 
 
 data = pd.read_csv(DIALECT_PATH).merge(pd.read_csv(PREDICTIONS_PATH), on=ID_COLUMN)
-data["true_label"] = (data["class"] == 0).astype(int)  # Davidson ground truth: 1 = hate speech, 0 = not hate
 
 for model_key, model_name in MODEL_NAMES.items():
     print("\n\n" + "=" * 90)
     print(f"MODEL {model_key}: {model_name}")
     print("=" * 90)
     rng = np.random.default_rng(RANDOM_SEED)  # same seed for each model
+    data["true_label"] = data["class"].isin(POSITIVE_CLASSES[model_key]).astype(int)
     groups = {}
     for name in ["aae_aligned", "mainstream"]:
         sub = data[data["dialect_group"] == name]
