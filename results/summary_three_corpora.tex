@@ -1,0 +1,18 @@
+\begin{tabular}{lllrrrrrr}
+\hline
+Corpus & Groups & Model & $n_{AAE}$ & FPR AAE & FPR main. & Gap [95\% CI] & $P(\mathrm{AAE}>\mathrm{main.})$ & Ratio@10\% \\
+\hline
+Davidson & baseline & twitter-roberta-base-hate & 95 & 0.095 & 0.016 & +0.078 [+0.025, +0.142] & 0.674 & 2.42 \\
+Davidson & baseline & unbiased-toxic-roberta & 95 & 0.253 & 0.161 & +0.091 [+0.002, +0.180] & 0.656 & 1.79 \\
+Davidson & argmax & twitter-roberta-base-hate & 626 & 0.046 & 0.015 & +0.031 [+0.015, +0.049] & 0.617 & 2.01 \\
+Davidson & argmax & unbiased-toxic-roberta & 626 & 0.331 & 0.158 & +0.173 [+0.133, +0.210] & 0.656 & 2.41 \\
+HateXplain & baseline & twitter-roberta-base-hate & 263 & 0.369 & 0.121 & +0.248 [+0.188, +0.308] & 0.749 & 3.42 \\
+HateXplain & baseline & unbiased-toxic-roberta & 263 & 0.764 & 0.460 & +0.304 [+0.249, +0.357] & 0.700 & 3.00 \\
+HateXplain & argmax & twitter-roberta-base-hate & 1047 & 0.288 & 0.114 & +0.174 [+0.146, +0.202] & 0.657 & 2.76 \\
+HateXplain & argmax & unbiased-toxic-roberta & 1047 & 0.712 & 0.405 & +0.306 [+0.274, +0.337] & 0.705 & 3.49 \\
+HateDay & baseline & twitter-roberta-base-hate & 286 & 0.031 & 0.008 & +0.024 [+0.006, +0.045] & 0.733 & 2.66 \\
+HateDay & baseline & unbiased-toxic-roberta & 286 & 0.098 & 0.033 & +0.065 [+0.031, +0.103] & 0.668 & 2.06 \\
+HateDay & argmax & twitter-roberta-base-hate & 2436 & 0.020 & 0.008 & +0.012 [+0.006, +0.017] & 0.667 & 2.06 \\
+HateDay & argmax & unbiased-toxic-roberta & 2436 & 0.061 & 0.037 & +0.025 [+0.015, +0.035] & 0.641 & 1.63 \\
+\hline
+\end{tabular}
