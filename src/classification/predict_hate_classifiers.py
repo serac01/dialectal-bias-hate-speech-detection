@@ -76,10 +76,14 @@ for dataset, cfg in DATASETS.items():
     df = pd.read_csv(cfg["in"])
     df = df[df["dialect_group"] != "unscored"].reset_index(drop=True)
 
+    known = recorded.setdefault(dataset, {})
+    stale = [key for key, model in MODELS.items() if known.get(key) != model["name"]]
+
     if os.path.exists(cfg["out"]):
         previous = pd.read_csv(cfg["out"])
         print(f"Found {len(previous)} saved predictions.")
     else:
+        previous = None
         print("No predictions file yet.")
     predictions = df[[id_column]].copy()  # one row per tweet, same order as df
     if previous is not None:
