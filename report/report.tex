@@ -406,7 +406,7 @@ interval above zero, for model 1 (hate detector) and for model 2 (toxicity detec
 comparison. It is therefore not specific to one model or to one definition of harmful content.
 
 \item \textbf{Does it happen in all three corpora?} Yes, in all 12 comparisons (3 corpora,
-2 models, 2 group definitions). The size of the gap differs a lot: from $+0.01$ to $+0.07$ on
+2 models, 2 group definitions). The size of the gap differs a lot, from $+0.01$ to $+0.07$ on
 HateDay and from $+0.17$ to $+0.31$ on HateXplain. This is because the corpora have very
 different shares of flagged tweets. $P(\mathrm{A}{>}\mathrm{M})$, which does not depend on
 that share, is similar in all three (0.62 to 0.75).
@@ -429,7 +429,7 @@ comes from the label mix, and two thirds remain. Inside each label the gap is st
 ($+0.285$ on offensive tweets and $+0.078$ on \emph{neither} tweets).
 
 \item \textbf{Is it caused by profanity?} In part on Davidson, not on HateDay. On Davidson,
-profanity aimed at women matters a lot: among offensive tweets, the model 1 gap is $+0.225$
+profanity aimed at women matters a lot, among offensive tweets, the model 1 gap is $+0.225$
 for tweets with such a word and $+0.054$ for tweets without. Removing profanity before dialect
 scoring lowers the re-weighted gap to $+0.166$. On HateDay, profanity is rare, and the gap
 remains on tweets without any profanity ($+0.022$ for model 1, $+0.033$ for model 2).
@@ -439,15 +439,15 @@ tweets are much shorter (median 4 vs.\ 10 words). After matching the groups on l
 profanity, the gap remains ($+0.023$ for model 1, $+0.040$ for model 2). The gap is smallest in
 very short tweets and largest in long ones, so short length does not create the gap.
 
-\item \textbf{Do the words explain the gap?} On Davidson, mostly yes: a bag-of-words model
-reproduces 89\% (model 1) and 97\% (model 2) of the flag gap. On HateDay, mostly no: it
+\item \textbf{Do the words explain the gap?} On Davidson, mostly yes, a bag-of-words model
+reproduces 89\% (model 1) and 97\% (model 2) of the flag gap. On HateDay, mostly no, it
 reproduces only 12\% and 21\% of the flag gap, and 44\% and 37\% of the score gap. However,
 the groups are themselves defined by words, so this control cannot separate dialect bias from
 word bias.
 
-\item \textbf{Which words go with the false positives?} On Davidson: profanity, words aimed at
+\item \textbf{Which words go with the false positives?} On Davidson, profanity, words aimed at
 women, AAE words such as \emph{wit}, \emph{aint} and \emph{tryna}, and for model 1 also
-\emph{she} and \emph{her}. The spelling matters: one spelling of the n-word is flagged by model
+\emph{she} and \emph{her}. The spelling matters, one spelling of the n-word is flagged by model
 1 in 8.6\% of tweets, another in 77\%. On HateDay, the words most typical of the AAE-aligned
 group are harmless slang (\emph{fr}, \emph{gm}, \emph{nah}, \emph{fam}), and they are rarely
 flagged.
@@ -486,7 +486,7 @@ such data exists for these corpora.
 
 \section{The Final Report Compared with the Proposal}\label{sec:proposal}
 
-\textbf{What was done.} The core of the proposal is done and extended. I compare AAE-aligned
+The core of the proposal is done and extended. I compare AAE-aligned
 and mainstream tweets with a pretrained classifier, labelled tweets and a dialect tool. I use
 two classifiers instead of one, three corpora instead of one, bootstrap confidence intervals
 and measures that do not depend on the threshold. The dialect tool of Blodgett et al.\ was
@@ -496,7 +496,7 @@ Masking words and writing pairs of AAE and mainstream tweets were not done, beca
 new data. The expected outcome, that the classifier does worse on AAE tweets, is confirmed for
 false positives. It is not visible in F1, and it cannot be tested for recall.
 
-\textbf{What changed.} The proposal planned to use the Waseem and Hovy dataset. It is shared
+The proposal planned to use the Waseem and Hovy dataset. It is shared
 only as tweet IDs, and downloading old tweets from the X API is no longer free (about \$95,
 and many tweets are gone). Davidson includes the text, so it became the main corpus.
 HateXplain and HateDay were added to test if the result holds on other data. HateDay is a
@@ -505,13 +505,13 @@ to compare how well the model does on each group. Accuracy and F1 are not fair h
 the classifiers definitions of hate differ from the labels (Table~\ref{tab:mix}). The FPR gap
 became the main measure, as agreed with Rahil.
 
-\textbf{What was not done.} Fine-tuning on a balanced sample was moved to future work, as
+Fine-tuning on a balanced sample was moved to future work, as
 agreed with Rahil. Fine-tuning on Davidson would change the classifier's definition of
 hate to Davidson's, so I couldn't tell a drop in bias from a change in what counts as hate.
 This needs its own design. The time I had, on CPU only, went into the second classifier and
 the random sample instead.
 
-\textbf{Rahil feedback.}
+\textbf{Rahil feedback}
 \begin{itemize}
   \item \emph{Name the classifiers, their training data, and the label mapping.} Done in
   Sect.~\ref{sec:methods}. A first version of model 2 had been trained on Davidson's tweets,
@@ -519,7 +519,7 @@ the random sample instead.
   \item \emph{Make sure the data is available.} Waseem and Hovy was replaced by Davidson.
   HateDay is gated, and none of its tweets is stored in the repository.
   \item \emph{Narrow the scope.} The work focuses on one question, the false positive gap,
-  and on what explains it. Fine-tuning was dropped. I use one family of measures: the FPR
+  and on what explains it. Fine-tuning was dropped. I use one family of measures, the FPR
   gap and $P(\mathrm{A}{>}\mathrm{M})$.
   \item \emph{Use a second model.} Model 2 was added. The gap appears for both models
   (Sect.~\ref{sec:three}).
